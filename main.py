@@ -15,10 +15,8 @@
 # Date: 12/30/2013
 
 import re
-import os
 import sys
 import gv
-import os, os.path
 import getopt
 import argparse
 
@@ -31,9 +29,8 @@ from pygraph.readwrite.dot import write
 STYLE_SEPARATOR = ':'
 
 def main(argv):
-    outputfile = "state.png"
-
-    f = open('data', 'r')
+    outputfile = argv[0]+".png"
+    f = open(argv[0], 'r')
     gr = digraph()
     for line in f:
         command = line.rstrip()
