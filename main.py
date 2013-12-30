@@ -26,12 +26,27 @@ from pygraph.classes.digraph import digraph
 from pygraph.algorithms.searching import breadth_first_search
 from pygraph.readwrite.dot import write
 
+gr = digraph()
 STYLE_SEPARATOR = ':'
+
+def create_arrow(node_from, node_to, attrs, nodes):
+    if node_from not in nodes:
+        gr.add_node(node_from)
+        nodes.append(node_from)
+
+    if node_to not in nodes:
+        gr.add_node(node_to)
+        nodes.append(node_to)
+
+    gr.add_edge((node_from, node_to), attrs=attrs)
+
+
 
 def main(argv):
     outputfile = argv[0]+".png"
     f = open(argv[0], 'r')
-    gr = digraph()
+    nodes = []
+
     for line in f:
         command = line.rstrip()
         if command.startswith('#'):
@@ -45,16 +60,20 @@ def main(argv):
             # define a new node
             # ex.: ['node A', 'dashed']
             newnode = fields[0].split(' ')
+            nodename = newnode[1]
+            if nodename not in nodes:
+                nodes.append(nodename)
             gr.add_node(newnode[1])
         else:
             #arrow
             edge = fields[0].split(',')
+            arrow = edge[0]
+
             try:
                 comment_tmp = fields[1].split(',')
             except IndexError:
                 comment_tmp = ''
 
-            arrow = edge[0]
             try:
                 arrow_color = edge[1]
             except IndexError:
@@ -70,41 +89,32 @@ def main(argv):
             except IndexError:
                 comment_color = arrow_color
 
+            attrs = []
+            attrs.append(('fontcolor', comment_color))
+            attrs.append(('label', comment))
+            attrs.append(('color', arrow_color))
+
             if '-->' in arrow:
-                attrs = []
                 attrs.append(('style','dashed'))
-                attrs.append(('fontcolor', comment_color))
                 start = arrow.index('-->')
                 node_from = arrow[0:start]
                 node_to = arrow[start+3:]
-                attrs.append(('label', comment))
-                attrs.append(('color', arrow_color))
-
-                gr.add_edge((node_from, node_to), attrs=attrs)
+                create_arrow(node_from, node_to, attrs, nodes)
 
             elif '->' in arrow and '-->' not in arrow:
-                attrs = []
                 attrs.append(('style',''))
-                attrs.append(('fontcolor', comment_color))
                 start = arrow.index('->')
                 node_from = arrow[0:start]
                 node_to = arrow[start+2:]
-                attrs.append(('label', comment))
-                attrs.append(('color', arrow_color))
-
-                gr.add_edge((node_from, node_to), attrs=attrs)
+                create_arrow(node_from, node_to, attrs, nodes)
 
             elif '..>' in arrow:
-                attrs = []
                 attrs.append(('style','dotted'))
-                attrs.append(('fontcolor', comment_color))
                 start = arrow.index('..>')
                 node_from = arrow[0:start]
                 node_to = arrow[start+3:]
-                attrs.append(('label', comment))
-                attrs.append(('color', arrow_color))
+                create_arrow(node_from, node_to, attrs, nodes)
 
-                gr.add_edge((node_from, node_to), attrs=attrs)
 
     # Draw as PNG
     dot = write(gr)
