@@ -1,0 +1,20 @@
+node A
+node B
+node C
+node D
+node E
+node F
+node G
+node H
+node I
+
+A-->B,red:transition1,red
+B-->C, yellow:transition2
+A..>C:transition3
+D->E
+A-->F
+F->C
+A->I
+C->I
+F-->G
+G..>A
